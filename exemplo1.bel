@@ -1,0 +1,14 @@
+main () {
+    var bool teste;
+    var int valor_1;
+    var int valor_2;
+
+    readInput valor1;
+    readInput valor2;
+    
+    if (valor1 == valor2){
+        bool = True 
+    }
+    printLn bool;
+}
+
