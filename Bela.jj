@@ -35,6 +35,7 @@ TOKEN :
 |<BOOL: "bool">
 |<VOID: "void">
 |<IF: "if">
+|<THEN: "then">
 |<WHILE: "while">
 |<READINPUT: "readInput">
 |<RETURN : "return">
@@ -89,6 +90,7 @@ void Bela () :
 | <MAIORQ> { System.out.println("Operação: maior que");}
 | <COMPARA> { System.out.println("Operação: comparação");}
 | <IF> { System.out.println("Palavra reservada: if");}
+| <THEN> { System.out.println("Palavra reservada: then");}
 | <WHILE> { System.out.println("Palavra reservada: while");}
 | <READINPUT> { System.out.println("Palavra reservada: readInput");}
 | <RETURN> { System.out.println("Palavra reservada: return");}

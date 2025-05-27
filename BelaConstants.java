@@ -35,35 +35,37 @@ public interface BelaConstants {
   /** RegularExpression Id. */
   int IF = 17;
   /** RegularExpression Id. */
-  int WHILE = 18;
+  int THEN = 18;
   /** RegularExpression Id. */
-  int READINPUT = 19;
+  int WHILE = 19;
   /** RegularExpression Id. */
-  int RETURN = 20;
+  int READINPUT = 20;
   /** RegularExpression Id. */
-  int PRINTLN = 21;
+  int RETURN = 21;
   /** RegularExpression Id. */
-  int SOMA = 22;
+  int PRINTLN = 22;
   /** RegularExpression Id. */
-  int SUB = 23;
+  int SOMA = 23;
   /** RegularExpression Id. */
-  int MULT = 24;
+  int SUB = 24;
   /** RegularExpression Id. */
-  int DIV = 25;
+  int MULT = 25;
   /** RegularExpression Id. */
-  int AND = 26;
+  int DIV = 26;
   /** RegularExpression Id. */
-  int OR = 27;
+  int AND = 27;
   /** RegularExpression Id. */
-  int MENORQ = 28;
+  int OR = 28;
   /** RegularExpression Id. */
-  int MAIORQ = 29;
+  int MENORQ = 29;
   /** RegularExpression Id. */
-  int COMPARA = 30;
+  int MAIORQ = 30;
   /** RegularExpression Id. */
-  int NUM = 31;
+  int COMPARA = 31;
   /** RegularExpression Id. */
-  int ID = 32;
+  int NUM = 32;
+  /** RegularExpression Id. */
+  int ID = 33;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -88,6 +90,7 @@ public interface BelaConstants {
     "\"bool\"",
     "\"void\"",
     "\"if\"",
+    "\"then\"",
     "\"while\"",
     "\"readInput\"",
     "\"return\"",

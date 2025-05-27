@@ -26,6 +26,7 @@ public class Bela implements BelaConstants {
       case BOOL:
       case VOID:
       case IF:
+      case THEN:
       case WHILE:
       case READINPUT:
       case RETURN:
@@ -148,6 +149,10 @@ public class Bela implements BelaConstants {
         jj_consume_token(IF);
          System.out.println("Palavra reservada: if");
         break;
+      case THEN:
+        jj_consume_token(THEN);
+           System.out.println("Palavra reservada: then");
+        break;
       case WHILE:
         jj_consume_token(WHILE);
             System.out.println("Palavra reservada: while");
@@ -190,7 +195,7 @@ public class Bela implements BelaConstants {
       jj_la1_0 = new int[] {0xffffffe0,0xffffffe0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x1,0x1,};
+      jj_la1_1 = new int[] {0x3,0x3,};
    }
 
   /** Constructor with InputStream. */
@@ -328,7 +333,7 @@ public class Bela implements BelaConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[33];
+    boolean[] la1tokens = new boolean[34];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -345,7 +350,7 @@ public class Bela implements BelaConstants {
         }
       }
     }
-    for (int i = 0; i < 33; i++) {
+    for (int i = 0; i < 34; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

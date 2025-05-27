@@ -1,0 +1,2 @@
+main fun var = ; ( ) { } 123 45.67 identificador1 outro_id_2 float bool void
+printLn + - * / && || < > == if then while readInput return
