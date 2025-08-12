@@ -1,0 +1,254 @@
+PARSER_BEGIN(Bela)
+import java.io.*;
+import java.util.ArrayList;
+import ast.*;
+
+public class Bela {
+
+  public static void main(String args[]) throws ParseException, IOException {
+    Bela parser = new Bela(new FileInputStream(args[0]));
+    Prog arvore = parser.Bela();
+    //geraCodigo(arvore, args[0]);
+  }
+  //public static void geraCodigo(Prog prog, String nomeArquivo) {
+    // Implementação da geração de código aqui
+  //}
+}
+
+PARSER_END(Bela)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <FUN: "fun">
+| <APAR: "(">
+| <FPAR: ")">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <SEQ: ";">
+| <VIRGULA: ",">
+| <ATRIB: "=">
+| <FLOAT: "float">
+| <BOOL: "bool">
+| <VOID: "void">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <READINPUT: "readInput">
+| <RETURN: "return">
+| <PRINTLN: "printLn">
+| <SOMA: "+">
+| <SUB: "-">
+| <MULT: "*">
+| <DIV: "/">
+| <AND: "&&">
+| <OR: "||">
+| <MENORQ: "<">
+| <MAIORQ: ">">
+| <COMPARA: "==">
+| <TRUE: "true">
+| <FALSE: "false">
+}
+
+TOKEN :
+{
+  <TOKEN_id: <LETRA> (<LETRAOUDIGITO>)* (<FINAL_SUBLINHADO>)*>
+| <TOKEN_numliteral: <DIGITOS> <FACAO_OPCIONAL> <EXPOENTE_OPCIONAL>>
+| <# LETRA: ["a"-"z", "A"-"Z"]>
+| <# DIGITO: ["0"-"9"]>
+| <# DIGITOS: (<DIGITO>)+>
+| <# FACAO_OPCIONAL: ("." <DIGITOS>)?>
+| <# EXPOENTE_OPCIONAL: ("E" ("+" | "-")? <DIGITOS>)?>
+| <# LETRAOUDIGITO: (<LETRA> | <DIGITO>)>
+| <# FINAL_SUBLINHADO: ("_" <LETRAOUDIGITO>)+>
+}
+
+Prog Bela() :
+{ Main main = null; ArrayList<Fun> func = null; }
+{
+  main = Main() (func = Func())? { return new Prog(main, func); }
+}
+
+Main Main() :
+{ ArrayList<VarDecl> vars = null; ArrayList<Comando> coms = null; }
+{
+  <MAIN> <APAR> <FPAR> <ACHAVES> vars = VarDecl() coms = SeqComandos() <FCHAVES>
+  { return new Main(vars, coms); }
+}
+
+ArrayList<VarDecl> VarDecl() :
+{ ArrayList<VarDecl> vars = new ArrayList<VarDecl>(); Token id; String tipo; }
+{
+  ( <VAR> tipo = Tipo() id = <TOKEN_id> <SEQ> { vars.add(new VarDecl(tipo, id.image));} )*
+  { return vars; }
+}
+
+String Tipo() :
+{}
+{
+  <FLOAT> { return "float"; }
+| <BOOL> { return "bool"; }
+| <VOID> { return "void"; }
+}
+
+ArrayList<Comando> SeqComandos() :
+{ ArrayList<Comando> coms = new ArrayList<Comando>(); Comando c = null; }
+{
+  ( c = Comando() { coms.add(c); } )*
+  { return coms; }
+}
+
+Comando Comando() :
+{
+  Token id = null;
+  Token ifToken = null;
+  Token whileToken = null;
+  Token returnToken = null;
+  Token printLnToken = null;
+  Exp exp = null;
+  ArrayList<Comando> coms = null;
+}
+{
+  id = <TOKEN_id> { return ComandoL(id); }
+| ifToken = <IF> exp = Exp() <THEN> <ACHAVES> coms = SeqComandos() <FCHAVES> <SEQ> { return new CIf(ifToken.beginLine, exp, coms); }
+| whileToken = <WHILE> exp = Exp() <THEN> <ACHAVES> coms = SeqComandos() <FCHAVES> <SEQ> { return new CWhile(whileToken.beginLine, exp, coms); }
+| returnToken = <RETURN> exp = Exp() <SEQ> { return new CReturn(returnToken.beginLine, exp); }
+| printLnToken = <PRINTLN> exp = Exp() <SEQ> { return new CPrint(printLnToken.beginLine, exp); }
+}
+
+Comando ComandoL(Token id) :
+{
+  Exp exp = null;
+  Token atrib = null;
+  Token chamadaFun = null;
+  ArrayList<Exp> exps = null;
+}
+{
+  atrib = <ATRIB> { return ComandoLL(atrib, id); }
+| chamadaFun = <APAR> exps = ListaExp() <FPAR> <SEQ> { return new CChamadaFun(chamadaFun.beginLine, id.image, exps); }
+}
+
+Comando ComandoLL(Token atrib, Token id) :
+{ Exp exp = null; Token read = null; }
+{
+  exp = Exp() <SEQ> { return new CAtribuicao(atrib.beginLine, id.image, exp);}
+  | read = <READINPUT> <APAR> <FPAR> <SEQ> { return new CReadInput(read.beginLine, id.image); }
+}
+
+Exp Exp() :
+{
+  String op = null;
+  Exp exp1 = null;
+  Exp exp2 = null;
+  Exp f = null;
+}
+{
+  <APAR> exp1 = Exp() op = Op() exp2 = Exp() <FPAR> { return new EOpExp(op, exp1, exp2); }
+| f = Fator() { return f; }
+}
+
+Exp Fator() :
+{
+  Token id = null;
+  ArrayList<Exp> exps = null;
+  Token t = null;
+}
+{
+  id = <TOKEN_id> { exps = FatorL(); return new EChamadaFun(id.image, exps); }
+| t = <TOKEN_numliteral> { return new EFloat(Float.parseFloat(t.image)); }
+| <TRUE> { return new ETrue(); }
+| <FALSE> { return new EFalse(); }
+| { throw new ParseException("Erro: expressão inválida na regra Fator."); }
+
+}
+
+ArrayList<Exp> FatorL() :
+{
+  ArrayList<Exp> exps = new ArrayList<Exp>();
+}
+{
+  <APAR> exps = ListaExp() <FPAR> { return exps; }
+| { return exps; }
+}
+
+String Op() :
+{ Token op = null; }
+{
+  op = <SOMA>{ return op.image; }
+| op = <SUB>{ return op.image; }
+| op = <MULT>{ return op.image; }
+| op = <DIV>{ return op.image; }
+| op = <AND>{ return op.image; }
+| op = <OR>{ return op.image; }
+| op = <MENORQ>{ return op.image; }
+| op = <MAIORQ>{ return op.image; }
+| op = <COMPARA>{ return op.image; }
+
+}
+
+ArrayList<Exp> ListaExp() :
+{
+  Exp exp = null;
+  ArrayList<Exp> exps = new ArrayList<Exp>();
+  ArrayList<Exp> expsL = new ArrayList<Exp>();
+}
+{
+  exp = Exp() { exps.add(exp); } expsL = ListaExpL() { exps.addAll(expsL); } { return exps; }
+}
+
+ArrayList<Exp> ListaExpL() :
+{
+  Exp exp = null;
+  ArrayList<Exp> exps = new ArrayList<Exp>();
+}
+{
+  ( <VIRGULA> exp = Exp() { exps.add(exp); } )*
+  { return exps; }
+}
+
+ArrayList<Fun> Func() :
+{
+  ArrayList<Fun> funcs = new ArrayList<Fun>();
+  Token nome = null;
+  ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
+  String retorno = null;
+  ArrayList<VarDecl> vars = new ArrayList<VarDecl>();
+  ArrayList<Comando> body = new ArrayList<Comando>();
+}
+{
+  ( <FUN> retorno = Tipo() nome = <TOKEN_id> <APAR> params = ListaArg() <FPAR> <ACHAVES> vars = VarDecl() body = SeqComandos() <FCHAVES>
+    { funcs.add(new Fun(nome.image, params, retorno, vars, body)); }
+  )+
+  { return funcs; }
+}
+
+ArrayList<ParamFormalFun> ListaArg() :
+{
+  String tipo = null;
+  Token id = null;
+  ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
+}
+{
+  tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); } { params.addAll(ListaArgL()); }
+  { return params; }
+}
+
+ArrayList<ParamFormalFun> ListaArgL() :
+{
+  String tipo = null;
+  Token id = null;
+  ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
+}
+{
+  <VIRGULA> tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); }
+  { return params; }
+}

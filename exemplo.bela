@@ -1,0 +1,22 @@
+main() {
+    var float nota1;
+    var float nota2;
+    var float media;
+    var bool resultado;
+    nota1 = readInput();
+
+    nota2 = readInput();
+
+    media = calcularMedia(nota1, nota2);
+    printLn media;
+
+    if(media > 6.9) then {
+        resultado = true;
+    };
+}
+
+fun float calcularMedia(float x, float y) {
+    var float resultado;
+    resultado = ( (x + y) / 2.0);
+    return resultado;
+}
