@@ -32,6 +32,6 @@ java Bela exemplo.bela
 ```
 
 ### Próxima etapa
-- Codificar a geração de código
+- Codificar a geração de código.
 
 
