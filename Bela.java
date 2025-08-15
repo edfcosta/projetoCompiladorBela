@@ -2,13 +2,28 @@
 import java.io.*;
 import java.util.ArrayList;
 import ast.*;
+import java.io.IOException;
+import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.FileInputStream;
+
+
 
 public class Bela implements BelaConstants {
 
   public static void main(String args[]) throws ParseException, IOException {
     Bela parser = new Bela(new FileInputStream(args[0]));
     Prog arvore = parser.Bela();
-    //geraCodigo(arvore, args[0]);
+    String programa = geraCodigo(arvore, args[0]);
+
+    String nomeArquivo = args[0].replace(".bela", ".java");
+    FileWriter writer = new FileWriter("programas/" + nomeArquivo);
+        writer.write(programa);
+        writer.close();
+  }
+
+  public static String geraCodigo(Prog prog, String nomeArquivo) {
+    return prog.toString(nomeArquivo.replace(".bela", ""));
   }
 
   static final public Prog Bela() throws ParseException {
@@ -188,7 +203,6 @@ public class Bela implements BelaConstants {
   Exp exp = null; Token read = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case APAR:
-    case SEQ:
     case TRUE:
     case FALSE:
     case TOKEN_id:
@@ -226,10 +240,17 @@ public class Bela implements BelaConstants {
       jj_consume_token(FPAR);
                                                       {if (true) return new EOpExp(op, exp1, exp2);}
       break;
-    default:
-      jj_la1[7] = jj_gen;
+    case TRUE:
+    case FALSE:
+    case TOKEN_id:
+    case TOKEN_numliteral:
       f = Fator();
                 {if (true) return f;}
+      break;
+    default:
+      jj_la1[7] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
     throw new Error("Missing return statement in function");
   }
@@ -238,46 +259,48 @@ public class Bela implements BelaConstants {
   Token id = null;
   ArrayList<Exp> exps = null;
   Token t = null;
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case TOKEN_id:
+    if (jj_2_1(2)) {
       id = jj_consume_token(TOKEN_id);
-                    exps = FatorL(); {if (true) return new EChamadaFun(id.image, exps);}
-      break;
-    case TOKEN_numliteral:
-      t = jj_consume_token(TOKEN_numliteral);
-                           {if (true) return new EFloat(Float.parseFloat(t.image));}
-      break;
-    case TRUE:
-      jj_consume_token(TRUE);
-           {if (true) return new ETrue();}
-      break;
-    case FALSE:
-      jj_consume_token(FALSE);
-            {if (true) return new EFalse();}
-      break;
-    default:
-      jj_la1[8] = jj_gen;
-    {if (true) throw new ParseException("Erro: express\u00e3o inv\u00e1lida na regra Fator.");}
-    }
-    throw new Error("Missing return statement in function");
-  }
-
-  static final public ArrayList<Exp> FatorL() throws ParseException {
-  ArrayList<Exp> exps = new ArrayList<Exp>();
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case APAR:
       jj_consume_token(APAR);
       exps = ListaExp();
       jj_consume_token(FPAR);
-                                    {if (true) return exps;}
-      break;
-    default:
-      jj_la1[9] = jj_gen;
-    {if (true) return exps;}
+                                                                 {if (true) return new EChamadaFun(id.image, exps);}
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case TOKEN_id:
+        id = jj_consume_token(TOKEN_id);
+                    {if (true) return new EVar(id.image);}
+        break;
+      case TOKEN_numliteral:
+        t = jj_consume_token(TOKEN_numliteral);
+                           {if (true) return new EFloat(Float.parseFloat(t.image));}
+        break;
+      case TRUE:
+        jj_consume_token(TRUE);
+           {if (true) return new ETrue();}
+        break;
+      case FALSE:
+        jj_consume_token(FALSE);
+            {if (true) return new EFalse();}
+        break;
+      default:
+        jj_la1[8] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
     }
     throw new Error("Missing return statement in function");
   }
 
+///ArrayList<Exp> FatorL() :
+///{
+///  ArrayList<Exp> exps = new ArrayList<Exp>();
+///}
+///{
+///  
+///  <APAR> exps = ListaExp() <FPAR> { return exps; }
+///  | { return exps; }
+///}
   static final public String Op() throws ParseException {
   Token op = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -318,7 +341,7 @@ public class Bela implements BelaConstants {
                   {if (true) return op.image;}
       break;
     default:
-      jj_la1[10] = jj_gen;
+      jj_la1[9] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -329,35 +352,49 @@ public class Bela implements BelaConstants {
   Exp exp = null;
   ArrayList<Exp> exps = new ArrayList<Exp>();
   ArrayList<Exp> expsL = new ArrayList<Exp>();
-    exp = Exp();
-                exps.add(exp);
-    expsL = ListaExpL();
-                                                       exps.addAll(expsL);
-                                                                               {if (true) return exps;}
-    throw new Error("Missing return statement in function");
-  }
-
-  static final public ArrayList<Exp> ListaExpL() throws ParseException {
-  Exp exp = null;
-  ArrayList<Exp> exps = new ArrayList<Exp>();
     label_3:
     while (true) {
+      exp = Exp();
+                 exps.add(exp);
+      label_4:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case VIRGULA:
+          ;
+          break;
+        default:
+          jj_la1[10] = jj_gen;
+          break label_4;
+        }
+        jj_consume_token(VIRGULA);
+        exp = Exp();
+                              exps.add(exp);
+      }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case VIRGULA:
+      case APAR:
+      case TRUE:
+      case FALSE:
+      case TOKEN_id:
+      case TOKEN_numliteral:
         ;
         break;
       default:
         jj_la1[11] = jj_gen;
         break label_3;
       }
-      jj_consume_token(VIRGULA);
-      exp = Exp();
-                            exps.add(exp);
     }
     {if (true) return exps;}
     throw new Error("Missing return statement in function");
   }
 
+///ArrayList<Exp> ListaExpL() :
+///{
+  ///Exp exp = null;
+  ///ArrayList<Exp> exps = new ArrayList<Exp>();
+///}
+///{
+  //( <VIRGULA> exp = Exp() { exps.add(exp); } )? { return exps; }
+//}
   static final public ArrayList<Fun> Func() throws ParseException {
   ArrayList<Fun> funcs = new ArrayList<Fun>();
   Token nome = null;
@@ -365,7 +402,7 @@ public class Bela implements BelaConstants {
   String retorno = null;
   ArrayList<VarDecl> vars = new ArrayList<VarDecl>();
   ArrayList<Comando> body = new ArrayList<Comando>();
-    label_4:
+    label_5:
     while (true) {
       jj_consume_token(FUN);
       retorno = Tipo();
@@ -384,7 +421,7 @@ public class Bela implements BelaConstants {
         break;
       default:
         jj_la1[12] = jj_gen;
-        break label_4;
+        break label_5;
       }
     }
     {if (true) return funcs;}
@@ -395,24 +432,52 @@ public class Bela implements BelaConstants {
   String tipo = null;
   Token id = null;
   ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
-    tipo = Tipo();
-    id = jj_consume_token(TOKEN_id);
-                                  params.add(new ParamFormalFun(tipo, id.image));
-                                                                                      params.addAll(ListaArgL());
-    {if (true) return params;}
+    label_6:
+    while (true) {
+      tipo = Tipo();
+      id = jj_consume_token(TOKEN_id);
+                                   params.add(new ParamFormalFun(tipo, id.image));
+      label_7:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case VIRGULA:
+          ;
+          break;
+        default:
+          jj_la1[13] = jj_gen;
+          break label_7;
+        }
+        jj_consume_token(VIRGULA);
+        tipo = Tipo();
+        id = jj_consume_token(TOKEN_id);
+                                                params.add(new ParamFormalFun(tipo, id.image));
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case FLOAT:
+      case BOOL:
+      case VOID:
+        ;
+        break;
+      default:
+        jj_la1[14] = jj_gen;
+        break label_6;
+      }
+    }
+                                                                                                          {if (true) return params;}
     throw new Error("Missing return statement in function");
   }
 
-  static final public ArrayList<ParamFormalFun> ListaArgL() throws ParseException {
-  String tipo = null;
-  Token id = null;
-  ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
-    jj_consume_token(VIRGULA);
-    tipo = Tipo();
-    id = jj_consume_token(TOKEN_id);
-                                            params.add(new ParamFormalFun(tipo, id.image));
-    {if (true) return params;}
-    throw new Error("Missing return statement in function");
+  static private boolean jj_2_1(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_1(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(0, xla); }
+  }
+
+  static private boolean jj_3_1() {
+    if (jj_scan_token(TOKEN_id)) return true;
+    if (jj_scan_token(APAR)) return true;
+    return false;
   }
 
   static private boolean jj_initialized_once = false;
@@ -424,8 +489,10 @@ public class Bela implements BelaConstants {
   /** Next token. */
   static public Token jj_nt;
   static private int jj_ntk;
+  static private Token jj_scanpos, jj_lastpos;
+  static private int jj_la;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[13];
+  static final private int[] jj_la1 = new int[15];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -433,11 +500,14 @@ public class Bela implements BelaConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x800,0x38000,0xd40000,0xd40000,0x4080,0x201080,0x80,0x0,0x80,0xff000000,0x2000,0x40,};
+      jj_la1_0 = new int[] {0x40,0x800,0x38000,0xd40000,0xd40000,0x4080,0x200080,0x80,0x0,0xff000000,0x2000,0x80,0x40,0x2000,0x38000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x8,0x8,0x0,0x1e,0x0,0x1e,0x0,0x1,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x8,0x8,0x0,0x1e,0x1e,0x1e,0x1,0x0,0x1e,0x0,0x0,0x0,};
    }
+  static final private JJCalls[] jj_2_rtns = new JJCalls[1];
+  static private boolean jj_rescan = false;
+  static private int jj_gc = 0;
 
   /** Constructor with InputStream. */
   public Bela(java.io.InputStream stream) {
@@ -457,7 +527,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -471,7 +542,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Constructor. */
@@ -488,7 +560,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -498,7 +571,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Constructor with generated Token Manager. */
@@ -514,7 +588,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   /** Reinitialise. */
@@ -523,7 +598,8 @@ public class Bela implements BelaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 13; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
+    for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -533,11 +609,44 @@ public class Bela implements BelaConstants {
     jj_ntk = -1;
     if (token.kind == kind) {
       jj_gen++;
+      if (++jj_gc > 100) {
+        jj_gc = 0;
+        for (int i = 0; i < jj_2_rtns.length; i++) {
+          JJCalls c = jj_2_rtns[i];
+          while (c != null) {
+            if (c.gen < jj_gen) c.first = null;
+            c = c.next;
+          }
+        }
+      }
       return token;
     }
     token = oldToken;
     jj_kind = kind;
     throw generateParseException();
+  }
+
+  static private final class LookaheadSuccess extends java.lang.Error { }
+  static final private LookaheadSuccess jj_ls = new LookaheadSuccess();
+  static private boolean jj_scan_token(int kind) {
+    if (jj_scanpos == jj_lastpos) {
+      jj_la--;
+      if (jj_scanpos.next == null) {
+        jj_lastpos = jj_scanpos = jj_scanpos.next = token_source.getNextToken();
+      } else {
+        jj_lastpos = jj_scanpos = jj_scanpos.next;
+      }
+    } else {
+      jj_scanpos = jj_scanpos.next;
+    }
+    if (jj_rescan) {
+      int i = 0; Token tok = token;
+      while (tok != null && tok != jj_scanpos) { i++; tok = tok.next; }
+      if (tok != null) jj_add_error_token(kind, i);
+    }
+    if (jj_scanpos.kind != kind) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) throw jj_ls;
+    return false;
   }
 
 
@@ -570,6 +679,36 @@ public class Bela implements BelaConstants {
   static private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
   static private int[] jj_expentry;
   static private int jj_kind = -1;
+  static private int[] jj_lasttokens = new int[100];
+  static private int jj_endpos;
+
+  static private void jj_add_error_token(int kind, int pos) {
+    if (pos >= 100) return;
+    if (pos == jj_endpos + 1) {
+      jj_lasttokens[jj_endpos++] = kind;
+    } else if (jj_endpos != 0) {
+      jj_expentry = new int[jj_endpos];
+      for (int i = 0; i < jj_endpos; i++) {
+        jj_expentry[i] = jj_lasttokens[i];
+      }
+      boolean exists = false;
+      for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
+        exists = true;
+        int[] oldentry = (int[])(it.next());
+        if (oldentry.length == jj_expentry.length) {
+          for (int i = 0; i < jj_expentry.length; i++) {
+            if (oldentry[i] != jj_expentry[i]) {
+              exists = false;
+              break;
+            }
+          }
+          if (exists) break;
+        }
+      }
+      if (!exists) jj_expentries.add(jj_expentry);
+      if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
+    }
+  }
 
   /** Generate ParseException. */
   static public ParseException generateParseException() {
@@ -579,7 +718,7 @@ public class Bela implements BelaConstants {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 13; i++) {
+    for (int i = 0; i < 15; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -598,6 +737,9 @@ public class Bela implements BelaConstants {
         jj_expentries.add(jj_expentry);
       }
     }
+    jj_endpos = 0;
+    jj_rescan_token();
+    jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
       exptokseq[i] = jj_expentries.get(i);
@@ -613,7 +755,39 @@ public class Bela implements BelaConstants {
   static final public void disable_tracing() {
   }
 
-  //public static void geraCodigo(Prog prog, String nomeArquivo) {
-    // Implementação da geração de código aqui
-  //}
+  static private void jj_rescan_token() {
+    jj_rescan = true;
+    for (int i = 0; i < 1; i++) {
+    try {
+      JJCalls p = jj_2_rtns[i];
+      do {
+        if (p.gen > jj_gen) {
+          jj_la = p.arg; jj_lastpos = jj_scanpos = p.first;
+          switch (i) {
+            case 0: jj_3_1(); break;
+          }
+        }
+        p = p.next;
+      } while (p != null);
+      } catch(LookaheadSuccess ls) { }
+    }
+    jj_rescan = false;
+  }
+
+  static private void jj_save(int index, int xla) {
+    JJCalls p = jj_2_rtns[index];
+    while (p.gen > jj_gen) {
+      if (p.next == null) { p = p.next = new JJCalls(); break; }
+      p = p.next;
+    }
+    p.gen = jj_gen + xla - jj_la; p.first = token; p.arg = xla;
+  }
+
+  static final class JJCalls {
+    int gen;
+    Token first;
+    int arg;
+    JJCalls next;
+  }
+
 }

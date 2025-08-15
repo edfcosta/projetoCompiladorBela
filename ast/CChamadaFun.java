@@ -13,4 +13,12 @@ public class CChamadaFun extends Comando {
 		this.args = args;
 	}
 
+	public String toString() {
+		String comando = fun + "(";
+		for (var a : args) {
+			comando = a + " ";
+		}
+		return comando;
+	}
+
 }

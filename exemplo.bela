@@ -3,8 +3,9 @@ main() {
     var float nota2;
     var float media;
     var bool resultado;
-    nota1 = readInput();
 
+    resultado = false;
+    nota1 = readInput();
     nota2 = readInput();
 
     media = calcularMedia(nota1, nota2);
@@ -13,6 +14,7 @@ main() {
     if(media > 6.9) then {
         resultado = true;
     };
+    printLn resultado;
 }
 
 fun float calcularMedia(float x, float y) {

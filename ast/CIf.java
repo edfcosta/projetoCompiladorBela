@@ -13,4 +13,12 @@ public class CIf extends Comando {
 		this.bloco = bloco;
 	}
 
+	public String toString() {
+		String comando = "if ( " + exp + " ) {\n";
+		for (var c : bloco) {
+			comando += c + "\n";
+		}
+		comando += "}\n";
+		return comando;
+	}
 }

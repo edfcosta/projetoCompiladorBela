@@ -2,17 +2,29 @@ PARSER_BEGIN(Bela)
 import java.io.*;
 import java.util.ArrayList;
 import ast.*;
+import java.io.IOException;
+import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.FileInputStream;
+
+
 
 public class Bela {
 
   public static void main(String args[]) throws ParseException, IOException {
     Bela parser = new Bela(new FileInputStream(args[0]));
     Prog arvore = parser.Bela();
-    //geraCodigo(arvore, args[0]);
+    String programa = geraCodigo(arvore, args[0]);
+
+    String nomeArquivo = args[0].replace(".bela", ".java");
+    FileWriter writer = new FileWriter("programas/" + nomeArquivo);
+        writer.write(programa);
+        writer.close();
   }
-  //public static void geraCodigo(Prog prog, String nomeArquivo) {
-    // Implementação da geração de código aqui
-  //}
+
+  public static String geraCodigo(Prog prog, String nomeArquivo) {
+    return prog.toString(nomeArquivo.replace(".bela", ""));
+  }
 }
 
 PARSER_END(Bela)
@@ -163,22 +175,22 @@ Exp Fator() :
   Token t = null;
 }
 {
-  id = <TOKEN_id> { exps = FatorL(); return new EChamadaFun(id.image, exps); }
+  LOOKAHEAD(2) id = <TOKEN_id> <APAR> exps = ListaExp() <FPAR> { return new EChamadaFun(id.image, exps); }
+| id = <TOKEN_id> { return new EVar(id.image); }
 | t = <TOKEN_numliteral> { return new EFloat(Float.parseFloat(t.image)); }
 | <TRUE> { return new ETrue(); }
 | <FALSE> { return new EFalse(); }
-| { throw new ParseException("Erro: expressão inválida na regra Fator."); }
-
 }
 
-ArrayList<Exp> FatorL() :
-{
-  ArrayList<Exp> exps = new ArrayList<Exp>();
-}
-{
-  <APAR> exps = ListaExp() <FPAR> { return exps; }
-| { return exps; }
-}
+///ArrayList<Exp> FatorL() :
+///{
+///  ArrayList<Exp> exps = new ArrayList<Exp>();
+///}
+///{
+///  
+///  <APAR> exps = ListaExp() <FPAR> { return exps; }
+///  | { return exps; }
+///}
 
 String Op() :
 { Token op = null; }
@@ -202,18 +214,20 @@ ArrayList<Exp> ListaExp() :
   ArrayList<Exp> expsL = new ArrayList<Exp>();
 }
 {
-  exp = Exp() { exps.add(exp); } expsL = ListaExpL() { exps.addAll(expsL); } { return exps; }
-}
-
-ArrayList<Exp> ListaExpL() :
-{
-  Exp exp = null;
-  ArrayList<Exp> exps = new ArrayList<Exp>();
-}
-{
-  ( <VIRGULA> exp = Exp() { exps.add(exp); } )*
+  ///exp = Exp() { exps.add(exp); } expsL = ListaExpL() { exps.addAll(expsL); } { return exps; }
+  (exp = Exp() { exps.add(exp); }
+    ( <VIRGULA> exp = Exp() { exps.add(exp); } )*)+
   { return exps; }
 }
+
+///ArrayList<Exp> ListaExpL() :
+///{
+  ///Exp exp = null;
+  ///ArrayList<Exp> exps = new ArrayList<Exp>();
+///}
+///{
+  //( <VIRGULA> exp = Exp() { exps.add(exp); } )? { return exps; }
+//}
 
 ArrayList<Fun> Func() :
 {
@@ -238,17 +252,17 @@ ArrayList<ParamFormalFun> ListaArg() :
   ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
 }
 {
-  tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); } { params.addAll(ListaArgL()); }
-  { return params; }
+  (tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); }
+    ( <VIRGULA> tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); } )*)+  { return params; }
 }
 
-ArrayList<ParamFormalFun> ListaArgL() :
-{
-  String tipo = null;
-  Token id = null;
-  ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
-}
-{
-  <VIRGULA> tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); }
-  { return params; }
-}
+//ArrayList<ParamFormalFun> ListaArgL() :
+//{
+ // String tipo = null;
+  //Token id = null;
+  //ArrayList<ParamFormalFun> params = new ArrayList<ParamFormalFun>();
+//}
+//{
+ // (<VIRGULA> tipo = Tipo() id = <TOKEN_id> { params.add(new ParamFormalFun(tipo, id.image)); })*
+  //{ return params; }
+//}

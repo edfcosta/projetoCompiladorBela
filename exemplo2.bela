@@ -2,14 +2,13 @@ main() {
     var float n;
     var float i;
     var float soma;
-    var float tmp;
-
     n = readInput();
     i = 0.0;
     soma = 0.0;
 
     while ((i < n)||(i==n)) then {
-        tmp = soma;
-        soma = (tmp + i);
+        soma = (soma + i);
+        i= (i + 1);
     };
+    printLn soma;
 }

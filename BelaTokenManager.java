@@ -2,6 +2,10 @@
 import java.io.*;
 import java.util.ArrayList;
 import ast.*;
+import java.io.IOException;
+import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.FileInputStream;
 
 /** Token Manager. */
 public class BelaTokenManager implements BelaConstants

@@ -1,4 +1,4 @@
 package ast;
 
-
-public class Exp{}
+public class Exp {
+}
